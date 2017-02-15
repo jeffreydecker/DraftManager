@@ -1,0 +1,30 @@
+{
+  "name": "shoeless",
+  "version": "0.0.0",
+  "description": "Draft manager application for fantasy baseball",
+  "main": "index.js",
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://jeffreydecker@github.com/jeffreydecker/DraftManager.git"
+  },
+  "keywords": [
+    "node"
+  ],
+  "author": "Jeffrey Decker",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jeffreydecker/DraftManager/issues"
+  },
+  "homepage": "https://github.com/jeffreydecker/DraftManager#readme",
+  "dependencies": {
+    "angular": "^1.6.2",
+    "body-parser": "^1.16.1",
+    "express": "^4.14.1",
+    "method-override": "^2.3.7",
+    "mongoose": "^4.8.2",
+    "morgan": "^1.8.1"
+  }
+}

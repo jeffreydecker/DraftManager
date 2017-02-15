@@ -1,0 +1,5 @@
+// Cheat sheet
+
+-- Node --
+Add new dependency
+> npm install <dependency> --save
