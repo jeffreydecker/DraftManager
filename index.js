@@ -18,12 +18,6 @@ app.use(bodyParser.json());                                     // parse applica
 app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
 app.use(methodOverride());
 
-// var db = mongoose.connection;
-// db.on('error', console.error.bind(console, 'connection error:'));
-// db.once('open', function() {
-//   console.log("db connected");
-// });
-
 // Data models
 var Schema = mongoose.Schema;
 
@@ -38,7 +32,7 @@ var playerSchema = new Schema({
 
 // Hitter projection stats
 var hitterProjectionSchema = new Schema({
-  _player      : {type: String, ref: "Player"},
+  _player      : {type : String, ref : "Player"},
   atBats      : Number,
   runs        : Number,
   homeRuns    : Number,
@@ -57,7 +51,7 @@ var hitterProjectionSchema = new Schema({
 
 // Pitcher projection stats
 var pitcherProjectionSchema = new Schema({
-  _player        : {type: String, ref: "Player"},
+  _player       : {type : String, ref : "Player"},
   innings       : Number,
   strikeouts    : Number,
   wins          : Number,
@@ -76,14 +70,23 @@ var pitcherProjectionSchema = new Schema({
 
 // League info
 var leagueSchema = new Schema({
-  name  : String,
-  teams : [{type : Schema.Types.ObjectId, ref : "Team"}]
-})
+  name    : String,
+  teams   : [{type : Schema.Types.ObjectId, ref : "Team"}],
+  players : [{type : Schema.Types.ObjectId, ref : "LeaguePlayer"}]
+});
 
 // Team info
 var teamSchema = new Schema({
+  _league : {type : Schema.Types.ObjectId, ref : "League"},
   name : String,
   players : [{type : Schema.Types.ObjectId, ref : "Player"}]
+});
+
+// Player mapping for leagues
+var leaguePlayerSchema = new Schema({
+  _league : {type : Schema.Types.ObjectId, ref : "League"},
+  _player : {type: String, ref: "Player"},
+  _team : {type : Schema.Types.ObjectId, ref : "Team"}
 })
 
 var Player = mongoose.model("Player", playerSchema);
@@ -91,13 +94,21 @@ var HitterProjection = mongoose.model("HitterProjection", hitterProjectionSchema
 var PitcherProjection = mongoose.model("PitcherProjection", pitcherProjectionSchema);
 var League = mongoose.model("League", leagueSchema);
 var Team = mongoose.model("Team", teamSchema);
+var LeaguePlayer = mongoose.model("LeaguePlayer", leaguePlayerSchema);
 
 // API
+/*
+Fetch all players sorted by rank
+*/
+app.get('/api/leagues', function(req, res) {
+ getLeagues(req, res);
+});
+
  /*
  Fetch all players sorted by rank
  */
 app.get('/api/players', function(req, res) {
-  Player.find().sort({rank : 1}).exec(function(err, players) {
+  Player.find().sort({rank : 'asc'}).exec(function(err, players) {
     if (err) res.send(err);
     res.json(players);
   });
@@ -116,14 +127,116 @@ app.get('/api/hitters', function(req, res) {
 });
 
 /*
+Fetch all pitchers stats sorted by rank
+*/
+app.get('/api/pitchers', function(req, res) {
+ PitcherProjection.find()
+   .populate('_player')
+   .exec(function(err, hitters) {
+   if (err) res.send(err);
+   res.json(hitters);
+ });
+});
+
+/*
+Fetch all pitchers stats sorted by rank
+*/
+app.get('/api/teams', function(req, res) {
+ Team.find()
+   .exec(function(err, teams) {
+   if (err) res.send(err);
+   res.json(teams);
+ });
+});
+
+/*
+Draft a player
+*/
+app.post('/api/create/league', function(req, res) {
+  var leagueName = req.body.name;
+  var teamCount = req.body.count;
+  if (leagueName && teamCount) {
+    // Create a new league
+    League.create({name : leagueName}, function(err, league) {
+      if (err) return;
+      // Create teams for the league
+      var teamJsons = [{_league : league._id, name : ("My Team")}];
+      for (var i = 1; i < teamCount; i++) {
+        teamJsons.push({_league : league._id, name : ("Team " + i)});
+      }
+      Team.insertMany(teamJsons, function(err, teams) {
+        // Add teams to league
+        teams.forEach(function(team, index, array) {
+          league.teams.push(team._id);
+          if (index == array.length - 1) {
+            league.save(function(err, league) {
+              // Return all leagues
+              getLeagues(req, res);
+            });
+          }
+        });
+      });
+    });
+  }
+});
+
+app.delete('/api/league/:lid', function(req, res) {
+  League.findOne({_id : req.params.lid})
+    .populate('teams')
+    .exec(function(err, league) {
+      if (league) {
+        league.teams.forEach(function(team, index, array){
+          if (team) {
+            team.remove(function(err, team) {
+              if (err) {
+                console.log('Error Deleting Team in League: ' + err);
+              }
+            });
+          }
+        });
+        league.remove(function(err, league) {
+          if (err) {
+            console.log('Error Deleting League: ' + err);
+          }
+          getLeagues(req, res);
+        });
+      }
+  });
+});
+
+/*
+Draft a player
+*/
+app.post('/api/create/team', function(req, res) {
+  var name = req.body.name;
+  var league = req.body.league;
+  if (league && team && player) {
+    // TODO : add a team to a league
+  }
+});
+
+/*
 Draft a player
 */
 app.post('/api/draft', function(req, res) {
   var league = req.body.league;
   var team = req.body.team;
   var player = req.body.player;
-  if (league && team) {
+  var cost = req.body.cost;
+  if (league && team && player) {
     // TODO : add a player to a team in a league
+  }
+});
+
+/*
+Drop a player
+*/
+app.post('/api/drop', function(req, res) {
+  var league = req.body.league;
+  var team = req.body.team;
+  var player = req.body.player;
+  if (league && team && player) {
+    // TODO : drop a player from a team in a league
   }
 });
 
@@ -169,17 +282,26 @@ app.get('/scrape/hitter/projections', function(req, res) {
         // Kind of sketchy way to get the fantasypros playerId from the dom for each row.
         // These have a second class fp-id-<id> so we are grabbing the id part from that.
         var playerId = $($(this).find('.fp-player-link').get(0)).attr('class').split('-').pop();
+        var playerName = $(this).find('.player-name').text();
+        var team = $(this).find('small a').text();
+        var positions = $(this).find('small').text().split(' - ').pop().replace(')', '');
         var projections = $(this).find('td');
-        // TODO : Not all hitters will have player documents if they aren't ranked.
-        // We'll need to grab player info and insert them if they don't exist
-        // Player.create({
-        //   _id : playerId,
-        //   name :
-        //   team :
-        //   pos :
-        // }, function(err, player) {
-        //   if (err) res.send(err);
-        // });
+        // TODO : This really isn't the best way to go about this because it overwrites
+        // existing entries, which resets the rank. We could not set it and use a
+        // default for rank but then the sort option always puts the defaul ranked
+        // players at the top when sorting. Long term there should just be a scrape
+        // task that scrapes projections then rankings
+        Player.findOneAndUpdate(
+          { _id : playerId },
+          { _id : playerId,
+            name : playerName,
+            team : team,
+            pos : positions,
+            rank : Number.MAX_SAFE_INTEGER },
+          { upsert : true },
+          function(err, player) {
+            if (err) res.send(err);
+          });
         HitterProjection.findOneAndUpdate(
           {_player : playerId}, { // Find existing player by id
             _player : playerId,
@@ -211,16 +333,69 @@ app.get('/scrape/pitcher/projections', function(req, res) {
   request(url, function(err, response, html) {
       if (err) res.send(err);
       var $ = cheerio.load(html);
-
-      var output = "";
       $('#data tbody tr').each(function (index, element) {
-        $(this).find('td').each(function (index, element) {
-          output += $(this).text() + " ";
-        });
+        var playerId = $($(this).find('.fp-player-link').get(0)).attr('class').split('-').pop();
+        var playerName = $(this).find('.player-name').text();
+        var team = $(this).find('small a').text();
+        var positions = $(this).find('small').text().split(' - ').pop().replace(')', '');
+        var projections = $(this).find('td');
+        // TODO : This really isn't the best way to go about this because it overwrites
+        // existing entries, which resets the rank. We could not set it and use a
+        // default for rank but then the sort option always puts the defaul ranked
+        // players at the top when sorting. Long term there should just be a scrape
+        // task that scrapes projections then rankings
+        Player.findOneAndUpdate(
+          { _id : playerId },
+          { _id : playerId,
+            name : playerName,
+            team : team,
+            pos : positions,
+            rank : Number.MAX_SAFE_INTEGER },
+          { upsert : true },
+          function(err, player) {
+            if (err) res.send(err);
+          });
+        PitcherProjection.findOneAndUpdate(
+          {_player : playerId}, { // Find existing player by id
+            _player : playerId,
+            innings : $(projections.get(1)).text(),
+            strikeouts : $(projections.get(2)).text(),
+            wins : $(projections.get(3)).text(),
+            saves : $(projections.get(4)).text(),
+            era : $(projections.get(5)).text(),
+            whip : $(projections.get(6)).text(),
+            earnedRuns : $(projections.get(7)).text(),
+            hits : $(projections.get(8)).text(),
+            walks : $(projections.get(9)).text(),
+            homeRuns : $(projections.get(10)).text(),
+            games : $(projections.get(11)).text(),
+            starts : $(projections.get(12)).text(),
+            losses : $(projections.get(13)).text(),
+            completeGames : $(projections.get(14)).text(),
+          }, {upsert : true}, // If not found, create a new one
+          function(err, hitterProjection) {
+            if (err) res.send(err);
+          });
       });
-      res.send(output);
+      res.send("Pitcher projections updated");
   });
 });
+
+app.get('/', function(req, res) {
+  res.sendFile('./public/index.html');
+});
+
+app.get('/league/:lid', function(req, res) {
+  // TODO : go to a league page
+});
+
+// Helper functions
+function getLeagues(req, res) {
+  League.find(function(err, leagues) {
+    if (err) res.send(err);
+    res.json(leagues);
+  });
+};
 
 // Listen
 app.listen(8080);
