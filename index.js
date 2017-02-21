@@ -1,15 +1,17 @@
 // Setup
-var express = require('express');
-var app = express();
-var mongoose = require('mongoose');
-var morgan = require('morgan');
-var bodyParser = require('body-parser');
-var methodOverride = require('method-override');
-var request = require('request');
-var cheerio = require('cheerio');
+var express = require('express'),
+  app = express(),
+  bodyParser = require('body-parser'),
+  methodOverride = require('method-override'),
+  request = require('request'),
+  cheerio = require('cheerio'),
+  db = require('./config/db'),
+  port = process.env.PORT || 8080,
+  mongoose = require('mongoose'),
+  morgan = require('morgan');
 
 // Config
-mongoose.connect('mongodb://shoeless-app:barefeet@ds145359.mlab.com:45359/shoeless-db');
+mongoose.connect(db.url);
 
 app.use(express.static(__dirname + '/public'));
 app.use(morgan('dev'));
@@ -17,84 +19,14 @@ app.use(bodyParser.urlencoded({'extended':'true'}));            // parse applica
 app.use(bodyParser.json());                                     // parse application/json
 app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
 app.use(methodOverride());
-
+// app.use(require('./app/routes')); // Use our routes.js
 // Data models
-var Schema = mongoose.Schema;
-
-// Genral player info
-var playerSchema = new Schema({
-  _id   : String,   // FantasyPros player id
-  name  : String,
-  rank  : Number,   // Overall ranking according to FantasyPros concensus
-  team  : String,
-  pos   : String    // Comma delimited string of eligible positions
-});
-
-// Hitter projection stats
-var hitterProjectionSchema = new Schema({
-  _player      : {type : String, ref : "Player"},
-  atBats      : Number,
-  runs        : Number,
-  homeRuns    : Number,
-  rbi         : Number,
-  steals      : Number,
-  average     : Number,
-  obp         : Number,
-  hits        : Number,
-  doubles     : Number,
-  tripples    : Number,
-  walks       : Number,
-  strikeouts  : Number,
-  slugging    : Number,
-  ops         : Number
-});
-
-// Pitcher projection stats
-var pitcherProjectionSchema = new Schema({
-  _player       : {type : String, ref : "Player"},
-  innings       : Number,
-  strikeouts    : Number,
-  wins          : Number,
-  saves         : Number,
-  era           : Number,
-  whip          : Number,
-  earnedRuns    : Number,
-  hits          : Number,
-  walks         : Number,
-  homeRuns      : Number,
-  games         : Number,
-  starts        : Number,
-  losses        : Number,
-  completeGames : Number
-});
-
-// League info
-var leagueSchema = new Schema({
-  name    : String,
-  teams   : [{type : Schema.Types.ObjectId, ref : "Team"}],
-  players : [{type : Schema.Types.ObjectId, ref : "LeaguePlayer"}]
-});
-
-// Team info
-var teamSchema = new Schema({
-  _league : {type : Schema.Types.ObjectId, ref : "League"},
-  name : String,
-  players : [{type : Schema.Types.ObjectId, ref : "Player"}]
-});
-
-// Player mapping for leagues
-var leaguePlayerSchema = new Schema({
-  _league : {type : Schema.Types.ObjectId, ref : "League"},
-  _player : {type: String, ref: "Player"},
-  _team : {type : Schema.Types.ObjectId, ref : "Team"}
-})
-
-var Player = mongoose.model("Player", playerSchema);
-var HitterProjection = mongoose.model("HitterProjection", hitterProjectionSchema);
-var PitcherProjection = mongoose.model("PitcherProjection", pitcherProjectionSchema);
-var League = mongoose.model("League", leagueSchema);
-var Team = mongoose.model("Team", teamSchema);
-var LeaguePlayer = mongoose.model("LeaguePlayer", leaguePlayerSchema);
+var Player = require('./app/models/player');
+var HitterProjection = require('./app/models/hitterProjection');
+var PitcherProjection = require('./app/models/pitcherProjection');
+var League = require('./app/models/league');
+var Team = require('./app/models/team');
+var LeaguePlayer = require('./app/models/leaguePlayer');
 
 // API
 /*
@@ -152,9 +84,9 @@ app.get('/api/teams', function(req, res) {
 /*
 Draft a player
 */
-app.post('/api/create/league', function(req, res) {
+app.post('/api/league', function(req, res) {
   var leagueName = req.body.name;
-  var teamCount = req.body.count;
+  var teamCount = req.body.teams;
   if (leagueName && teamCount) {
     // Create a new league
     League.create({name : leagueName}, function(err, league) {
@@ -164,16 +96,12 @@ app.post('/api/create/league', function(req, res) {
       for (var i = 1; i < teamCount; i++) {
         teamJsons.push({_league : league._id, name : ("Team " + i)});
       }
+
       Team.insertMany(teamJsons, function(err, teams) {
         // Add teams to league
-        teams.forEach(function(team, index, array) {
-          league.teams.push(team._id);
-          if (index == array.length - 1) {
-            league.save(function(err, league) {
-              // Return all leagues
-              getLeagues(req, res);
-            });
-          }
+        league.addTeams(teams, (err, league) => {
+          if (err) console.log("Error adding teams to league: " + err);
+          getLeagues(req, res);
         });
       });
     });
@@ -398,5 +326,6 @@ function getLeagues(req, res) {
 };
 
 // Listen
-app.listen(8080);
-console.log("Listening on 8080");
+app.listen(port, () => {
+  console.log(`Listening on http://localhost:${port}`);
+});

@@ -11,7 +11,7 @@ function mainController($scope, $http) {
     });
 
     $scope.createLeague = function() {
-      $http.post('/api/create/league', $scope.formData)
+      $http.post('/api/league', $scope.formData)
         .success(function(data) {
           $scope.formData = {};
           $scope.leagues = data;
