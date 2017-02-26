@@ -3,9 +3,9 @@ var mongoose = require('mongoose'),
 
 // Team info
 var TeamSchema = new Schema({
-  _league : {type : Schema.Types.ObjectId, ref : "League"},
   name : String,
-  players : [{type : Schema.Types.ObjectId, ref : "Player"}]
+  _league : {type : Schema.Types.ObjectId, ref : "League"},
+  players : [{type : Schema.Types.ObjectId, ref : "LeaguePlayer"}]
 });
 
 TeamSchema.methods.rename = function(name, callback) {
@@ -15,7 +15,16 @@ TeamSchema.methods.rename = function(name, callback) {
 
 TeamSchema.methods.draft = function(player, callback) {
   this.players.push(player._id);
-  this.save(callback);
+  player.draft(this, () => {
+    this.save(callback);
+  });
+}
+
+TeamSchema.methods.drop = function(player, callback) {
+  // TODO - for each through players to remove dropped player
+  player.drop(() => {
+    this.save(callback);
+  });
 }
 
 module.exports = mongoose.model('Team', TeamSchema);

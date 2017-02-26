@@ -2,11 +2,29 @@
 var express = require('express'),
   router = express.Router()
   League = require('../models/league'),
-  Team = require('../models/team')
+  Team = require('../models/team'),
+  LeaguePlayer = require('../models/leaguePlayer'),
   controller = require('../controllers/main.controller');
 
-// Create a league
-router.post('/', (req, res) => {
+// Fetches legaue for leagueId param
+router.param('leagueId', (req, res, next, leagueId) => {
+  League.findOne({_id : leagueId})
+    .populate('teams players')
+    .exec((err, league) => {
+      if (err) {
+        res.send(err)
+      } else if (league) {
+        req.league = league;
+        next();
+      } else {
+        res.send(new Error(`No league found for ${leagueId}`));
+      }
+    });
+});
+
+// General leagues route
+router.route('/')
+.post((req, res) => { // Create a league
   var leagueName = req.body.name;
   var teamCount = req.body.teams;
   if (leagueName && teamCount) {
@@ -28,41 +46,40 @@ router.post('/', (req, res) => {
       });
     });
   }
-});
-
-// Get a league or all leagues
-router.get('/', (req, res) => {
+})
+.get((req, res) => { // Get all leagues
   controller.getLeagues(req, res);
 });
 
-// Update a league
-router.put('/', (req, res) => {
+// League specific route
+router.route('/:leagueId')
+.get((req, res) => { // Get a league
+  res.json(req.league);
+})
+.put((req, res) => { // Update a league
 
-});
-
-// Delete a league
-router.delete('/:leagueId', (req, res) => {
-  League.findOne({_id : req.params.leagueId})
-    .populate('teams')
-    .exec(function(err, league) {
-      if (league) {
-        league.teams.forEach(function(team, index, array){
-          if (team) {
-            team.remove(function(err, team) {
-              if (err) {
-                console.log('Error Deleting Team in League: ' + err);
-              }
-            });
-          }
-        });
-        league.remove(function(err, league) {
+})
+.delete((req, res) => { // Delete a league
+  if (req.league) {
+    req.league.teams.forEach(function(team, index, array){
+      if (team) {
+        team.remove(function(err, team) {
           if (err) {
-            console.log('Error Deleting League: ' + err);
+            console.log(`Error Deleting Team in League: ${err}`);
           }
-          getLeagues(req, res);
         });
       }
-  });
+    });
+
+    req.league.remove(function(err, league) {
+      if (err) {
+        console.log(`Error Deleting League: ${err}`);
+      }
+      getLeagues(req, res);
+    });
+  } else {
+    res.send(new Error(`No league found for ${req.params.leagueId}`));
+  }
 });
 
 module.exports = router;
