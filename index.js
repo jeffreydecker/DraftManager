@@ -19,129 +19,12 @@ app.use(bodyParser.urlencoded({'extended':'true'}));            // parse applica
 app.use(bodyParser.json());                                     // parse application/json
 app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
 app.use(methodOverride());
-// app.use(require('./app/routes')); // Use our routes.js
+app.use(require('./app/routes/')); // Use our routes index.js
+
 // Data models
 var Player = require('./app/models/player');
 var HitterProjection = require('./app/models/hitterProjection');
 var PitcherProjection = require('./app/models/pitcherProjection');
-var League = require('./app/models/league');
-var Team = require('./app/models/team');
-var LeaguePlayer = require('./app/models/leaguePlayer');
-
-// API
-/*
-Fetch all players sorted by rank
-*/
-app.get('/api/leagues', function(req, res) {
- getLeagues(req, res);
-});
-
- /*
- Fetch all players sorted by rank
- */
-app.get('/api/players', function(req, res) {
-  Player.find().sort({rank : 'asc'}).exec(function(err, players) {
-    if (err) res.send(err);
-    res.json(players);
-  });
-});
-
- /*
- Fetch all hitters stats sorted by rank
- */
-app.get('/api/hitters', function(req, res) {
-  HitterProjection.find()
-    .populate('_player')
-    .exec(function(err, hitters) {
-    if (err) res.send(err);
-    res.json(hitters);
-  });
-});
-
-/*
-Fetch all pitchers stats sorted by rank
-*/
-app.get('/api/pitchers', function(req, res) {
- PitcherProjection.find()
-   .populate('_player')
-   .exec(function(err, hitters) {
-   if (err) res.send(err);
-   res.json(hitters);
- });
-});
-
-/*
-Fetch all pitchers stats sorted by rank
-*/
-app.get('/api/teams', function(req, res) {
- Team.find()
-   .exec(function(err, teams) {
-   if (err) res.send(err);
-   res.json(teams);
- });
-});
-
-/*
-Draft a player
-*/
-app.post('/api/league', function(req, res) {
-  var leagueName = req.body.name;
-  var teamCount = req.body.teams;
-  if (leagueName && teamCount) {
-    // Create a new league
-    League.create({name : leagueName}, function(err, league) {
-      if (err) return;
-      // Create teams for the league
-      var teamJsons = [{_league : league._id, name : ("My Team")}];
-      for (var i = 1; i < teamCount; i++) {
-        teamJsons.push({_league : league._id, name : ("Team " + i)});
-      }
-
-      Team.insertMany(teamJsons, function(err, teams) {
-        // Add teams to league
-        league.addTeams(teams, (err, league) => {
-          if (err) console.log("Error adding teams to league: " + err);
-          getLeagues(req, res);
-        });
-      });
-    });
-  }
-});
-
-app.delete('/api/league/:lid', function(req, res) {
-  League.findOne({_id : req.params.lid})
-    .populate('teams')
-    .exec(function(err, league) {
-      if (league) {
-        league.teams.forEach(function(team, index, array){
-          if (team) {
-            team.remove(function(err, team) {
-              if (err) {
-                console.log('Error Deleting Team in League: ' + err);
-              }
-            });
-          }
-        });
-        league.remove(function(err, league) {
-          if (err) {
-            console.log('Error Deleting League: ' + err);
-          }
-          getLeagues(req, res);
-        });
-      }
-  });
-});
-
-/*
-Draft a player
-*/
-app.post('/api/create/team', function(req, res) {
-  var name = req.body.name;
-  var league = req.body.league;
-  if (league && team && player) {
-    // TODO : add a team to a league
-  }
-});
 
 /*
 Draft a player
@@ -312,18 +195,6 @@ app.get('/scrape/pitcher/projections', function(req, res) {
 app.get('/', function(req, res) {
   res.sendFile('./public/index.html');
 });
-
-app.get('/league/:lid', function(req, res) {
-  // TODO : go to a league page
-});
-
-// Helper functions
-function getLeagues(req, res) {
-  League.find(function(err, leagues) {
-    if (err) res.send(err);
-    res.json(leagues);
-  });
-};
 
 // Listen
 app.listen(port, () => {

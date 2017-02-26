@@ -1,7 +1,11 @@
-var express = require('express');
+var mongoose = require('mongoose'),
+  League = require('../models/league');
 
 module.exports = {
   getLeagues: (req, res) => {
-    // Fetch leagues here
+    League.find((err, leagues) => {
+      if (err) res.send(err);
+      res.json(leagues);
+    });
   }
 }
