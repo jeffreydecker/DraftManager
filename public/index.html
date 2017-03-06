@@ -1,4 +1,4 @@
-<doctype html>
+<!doctype html>
 
 <html ng-app="draftManager">
 <head>
@@ -7,7 +7,8 @@
 
   <title>Draft Manager</title>
 
-  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"><!-- load bootstrap -->
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"><!-- load bootstrap -->
+
   <style>
       html                    { overflow-y:scroll; }
       body                    { padding-top:50px; }
@@ -15,60 +16,25 @@
   </style>
 
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script><!-- load angular -->
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-route.min.js"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- <script src="/scripts/angular.js"></script> -->
+  <!-- <script src="/scripts/angular-route.min.js"></script> -->
   <script src="core.js"></script>
+  <script src="app.config.js"></script>
+  <script src="leagues/leagues.module.js"></script>
+  <script src="leagues/leagues.component.js"></script>
+  <script src="leagues/league-form.component.js"></script>
+  <script src="leagues/leagues-list.component.js"></script>
 
+  <base href="/">
 </head>
 
-<body ng-controller="mainController">
+<body>
   <nav class="navbar navbar-inverse navbar-fixed-top"></nav>
-    <div class="container">
-
-        <!-- HEADER AND LEAGUE COUNT -->
-        <div class="jumbotron text-center">
-            <h2>Create a League</h2>
-            <!-- FORM TO CREATE LEAUGES -->
-            <div id="todo-form" class="row">
-                <div class="col-sm-8 col-sm-offset-2 text-center">
-                    <form>
-                        <div class="form-group">
-                            <!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
-                            <input type="text" class="form-control input-lg text-center" placeholder="New League Name" ng-model="formData.name">
-                        </div>
-                        <div class="form-group">
-                            <!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
-                            <input type="number" class="form-control input-lg text-center" placeholder="12" ng-model="formData.teams">
-                        </div>
-                        <!-- createLeague() WILL CREATE NEW LEAGUES -->
-                        <button type="submit" class="btn btn-success btn-lg" ng-click="createLeague()">Create</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- LEAGUE LIST -->
-        <div id="league-list" class="panel panel-default">
-          <div class="panel-heading">Leagues</div>
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Teams</th>
-                <th>Edit</th>
-              </tr>
-            </tbody>
-            <tbody ng-repeat="league in leagues">
-              <tr>
-                <td><a href="/api/leagues">{{ league.name }}</a></td>
-                <td>{{ league.teams.length }}</td>
-                <td>
-                  <button type="submit" class="btn btn-primary btn-md">Rename</button><!-- TODO : show rename popup here -->
-                  <button type="submit" class="btn btn-danger btn-md" ng-click="deleteLeague(league._id)">Delete</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-    </div>
+  <div class="container">
+    <div ng-view></div>
+  </div>
 </body>
 </html>

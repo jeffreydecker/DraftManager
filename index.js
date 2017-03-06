@@ -14,6 +14,9 @@ var express = require('express'),
 mongoose.connect(db.url);
 
 app.use(express.static(__dirname + '/public'));
+app.use('/scripts', express.static(__dirname + '/node_modules/angular/'));
+app.use('/scripts', express.static(__dirname + '/node_modules/bootstrap/dist/'));
+app.use('/scripts', express.static(__dirname + '/node_modules/angular-route/'));
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({'extended':'true'}));            // parse application/x-www-form-urlencoded
 app.use(bodyParser.json());                                     // parse application/json
@@ -192,8 +195,8 @@ app.get('/scrape/pitcher/projections', function(req, res) {
   });
 });
 
-app.get('/', function(req, res) {
-  res.sendFile('./public/index.html');
+app.get('*', function(req, res) {
+  res.sendFile(__dirname + '/public/index.html');
 });
 
 // Listen

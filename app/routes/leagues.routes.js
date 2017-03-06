@@ -26,7 +26,7 @@ router.param('leagueId', (req, res, next, leagueId) => {
 router.route('/')
 .post((req, res) => { // Create a league
   var leagueName = req.body.name;
-  var teamCount = req.body.teams;
+  var teamCount = req.body.teamCount;
   if (leagueName && teamCount) {
     // Create a new league
     League.create({name : leagueName}, function(err, league) {
@@ -75,7 +75,7 @@ router.route('/:leagueId')
       if (err) {
         console.log(`Error Deleting League: ${err}`);
       }
-      getLeagues(req, res);
+      controller.getLeagues(req, res);
     });
   } else {
     res.send(new Error(`No league found for ${req.params.leagueId}`));
