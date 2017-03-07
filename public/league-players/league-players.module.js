@@ -1,1 +1,1 @@
-angular.module('leaguePlayers');
+angular.module('leaguePlayers', []);

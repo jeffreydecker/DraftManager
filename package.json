@@ -21,6 +21,7 @@
   "homepage": "https://github.com/jeffreydecker/DraftManager#readme",
   "dependencies": {
     "angular": "^1.6.2",
+    "async": "^2.1.5",
     "body-parser": "^1.16.1",
     "cheerio": "^0.22.0",
     "express": "^4.14.1",

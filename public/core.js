@@ -1,3 +1,3 @@
 'use strict';
 
-angular.module('draftManager', ['leagues', 'ngRoute']);
+angular.module('draftManager', ['ngRoute', 'leagues', 'leaguePlayers']);

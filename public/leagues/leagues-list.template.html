@@ -10,7 +10,7 @@
     </tbody>
     <tbody ng-repeat="league in $ctrl.leagues">
       <tr>
-        <td><a href="/api/leagues">{{ league.name }}</a></td>
+        <td><a ng-href="/league/{{league._id}}/players">{{ league.name }}</a></td>
         <td>{{ league.teams.length }}</td>
         <td>
           <button type="submit" class="btn btn-primary btn-md">Rename</button><!-- TODO : show rename popup here -->

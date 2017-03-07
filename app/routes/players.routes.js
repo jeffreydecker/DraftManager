@@ -5,7 +5,10 @@ var express = require('express'),
   Pitcher = require('../models/pitcherProjection');
 
 router.get('/', (req, res) => {
-  Player.find().sort({rank : 'asc'}).exec(function(err, players) {
+  Player.find()
+  .sort({rank : 'asc'})
+  .populate('hittingProjections pitchingProjections')
+  .exec(function(err, players) {
     if (err) res.send(err);
     res.json(players);
   });

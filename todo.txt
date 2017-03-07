@@ -1,0 +1,4 @@
+(A) Figure out how to get refresh to work @angular
+(B) Connect draft league-players view up to backend and add option to allow team selection @angular
+(C) Add salary to league player object @api
+(A) Update scraping to only scrape for ranked players @datacollection
