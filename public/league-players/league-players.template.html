@@ -1,7 +1,7 @@
-<div id="league-players" class="panel panel-default">
+<div id="league-players" class="panel panel-default table-responsive">
   <div class="panel-heading">Leagues</div>
-  <table class="table">
-    <thead>
+  <table class="table table-sm table-striped table-hover table-condensed">
+    <thead class="thead-inverse">
       <tr>
         <th>Draft</th>
         <th>Rank</th>
@@ -16,10 +16,11 @@
         <th>AVG/SV</th>
       </tr>
     </thead>
-    <tbody ng-repeat="player in $ctrl.players">
-      <tr>
-        <td><button type="submit" class="btn btn-primary btn-md" ng-click="$ctrl.draftPlayer(player)">Draft</button></td>
-        <td>{{ player._player.rank }}</td>
+    <tbody>
+      <tr ng-hide="$ctrl.players.length > 0" class="ng-hide"><td class="centered" colspan="11"><i class="fa fa-spinner fa-spin centered"></i></td></tr>
+      <tr ng-repeat="player in $ctrl.players">
+        <td><button type="submit" class="btn btn-primary btn-sm" ng-click="$ctrl.draftPlayer(player)">Draft</button></td>
+        <td>{{ player._player.rank == 9007199254740991 ? "Unranked" : player._player.rank }}</td>
         <td>{{ player._player.name }}</td>
         <td>{{ player._player.team }}</td>
         <td>{{ player._player.pos }}</td>
