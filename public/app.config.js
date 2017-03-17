@@ -6,7 +6,7 @@ angular.module('draftManager')
           template: '<leagues></leagues>'
         }).
         when('/league/:leagueId', {
-          template: '<league></league>'
+          template: '<draft></draft>'
         }).
         otherwise({
           redirectTo: '/'

@@ -1,0 +1,22 @@
+<div id="draft-teams" class="panel panel-default table-responsive">
+  <div class="panel-heading">Teams</div>
+  <table class="table table-sm table-striped table-hover table-condensed">
+    <thead class="thead-inverse">
+      <tr>
+        <th>Name</th>
+        <th>$ Remaining</th>
+        <th>Picks Remaining</th>
+        <th>Max Bid</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-hide="$ctrl.league.teams.length > 0" class="ng-hide"><td class="centered" colspan="11"><i class="fa fa-spinner fa-spin centered"></i></td></tr>
+      <tr ng-repeat="team in $ctrl.league.teams" data-toggle="modal" data-target="#myModal2">
+        <th>{{ team.name }}</th>
+        <td>300</td> <!-- TODO - need to add budget to leagues with salary -->
+        <td>23</td> <!-- TODO - create team method for this -->
+        <td>278</td> <!-- TODO - create team method for this -->
+      </tr>
+    </tbody>
+  </table>
+</div>

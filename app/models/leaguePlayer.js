@@ -3,9 +3,12 @@ var mongoose = require('mongoose'),
 
 // Player mapping for leagues
 var LeaguePlayerSchema = new Schema({
-  _player : {type: String, ref: "Player"},
+  salary  : Number,
+  value   : Number,
+  isMinor : Boolean,
+  _player : {type : String, ref: "Player"},
   _league : {type : Schema.Types.ObjectId, ref : "League"},
-  _team : {type : Schema.Types.ObjectId, ref : "Team"}
+  _team   : {type : Schema.Types.ObjectId, ref : "Team"}
 });
 
 LeaguePlayerSchema.methods.draft = (team, callback) => {

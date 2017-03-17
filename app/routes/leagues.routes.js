@@ -10,7 +10,16 @@ var express = require('express'),
 // Fetches legaue for leagueId param
 router.param('leagueId', (req, res, next, leagueId) => {
   League.findOne({_id : leagueId})
-    .populate('teams players')
+    .populate('teams')
+    .populate({
+      path: 'players',
+      populate: {
+        path: '_player',
+        populate: {
+          path: 'hittingProjections pitchingProjections'
+        }
+      }
+    })
     .exec((err, league) => {
       if (err) {
         res.send(err)
@@ -69,6 +78,7 @@ router.route('/')
         if (err) res.send(err);
 
         var playerJsons = [];
+        var playerIdJsons = [];
 
         players.forEach((player, index, array) => {
           playerJsons.push({_league: league._id, _player: player._id});
@@ -76,6 +86,7 @@ router.route('/')
 
         LeaguePlayer.insertMany(playerJsons, (err, players) => {
           if (err) console.log(`Error league players: ${err}`);
+          league.addPlayers(players);
         });
       });
     });

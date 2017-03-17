@@ -1,6 +1,6 @@
-angular.module('league').component('league', {
-  templateUrl: 'league/league.template.html',
-  controller: ['$http', '$routeParams', function LeagueController($http, $routeParams) {
+angular.module('draft').component('draft', {
+  templateUrl: 'draft/draft.template.html',
+  controller: ['$http', '$routeParams', function DraftController($http, $routeParams) {
     const that = this;
     this.league = null;
 
