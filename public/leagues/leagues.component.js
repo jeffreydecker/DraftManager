@@ -12,8 +12,14 @@ angular.module('leagues').component('leagues', {
         console.log('Error: ' + data);
       });
 
-    this.addLeague = (name, teamCount) => {
-      $http.post('/api/leagues', {name: name, teamCount: teamCount})
+    this.addLeague = (name, teamCount, rosterSize, isAuction, budget, hasMinors, minorsCount) => {
+      $http.post('/api/leagues', {name: name,
+        teamCount: teamCount,
+        rosterSize: rosterSize,
+        isAuction: isAuction,
+        budget: budget,
+        hasMinors: hasMinors,
+        minorsCount: minorsCount})
         .success(function(data) {
           that.leagues = data;
           console.log(data);

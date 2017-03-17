@@ -6,7 +6,7 @@ var LeagueSchema = new Schema({
   name    : String,
   budget  : Number,
   rosterSize : Number,
-  minorsSpots : Number,
+  minorsCount : Number,
   includeMinorsInCap: Boolean,
   teams   : [{type : Schema.Types.ObjectId, ref : "Team"}],
   players : [{type : Schema.Types.ObjectId, ref : "LeaguePlayer"}],

@@ -50,11 +50,22 @@ router.param('leaguePlayerId', (req, res, next, leaguePlayerId) => {
 // General leagues route
 router.route('/')
 .post((req, res) => { // Create a league
-  var leagueName = req.body.name;
+  var leagueJSON = {};
+  leagueJSON.name = req.body.name;
   var teamCount = req.body.teamCount;
-  if (leagueName && teamCount) {
+  leagueJSON.rosterSize = req.body.rosterSize;
+  var isAuction = req.body.isAuction;
+  if (isAuction) {
+    leagueJSON.budget = req.body.budget;
+  }
+  var hasMinors = req.body.hasMinors;
+  if (hasMinors) {
+    leagueJSON.minorsCount = req.body.minorsCount;
+  }
+
+  if (leagueJSON.name && teamCount && leagueJSON.rosterSize) {
     // Create a new league
-    League.create({name : leagueName}, function(err, league) {
+    League.create(leagueJSON, function(err, league) {
       if (err) return;
       // Create teams for the league
       var teamJsons = [{_league : league._id, name : ("My Team")}];

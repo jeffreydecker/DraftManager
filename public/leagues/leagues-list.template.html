@@ -5,17 +5,17 @@
       <tr>
         <th>Name</th>
         <th>Teams</th>
-        <th>Edit</th>
+        <!-- <th>Edit</th> -->
       </tr>
     </tbody>
     <tbody ng-repeat="league in $ctrl.leagues">
       <tr>
         <td><a ng-href="/league/{{league._id}}">{{ league.name }}</a></td>
         <td>{{ league.teams.length }}</td>
-        <td>
-          <button type="submit" class="btn btn-primary btn-md">Rename</button><!-- TODO : show rename popup here -->
+        <!-- <td>
+          <button type="submit" class="btn btn-primary btn-md">Rename</button>
           <button type="submit" class="btn btn-danger btn-md" ng-click="$ctrl.deleteLeague(league._id)">Delete</button>
-        </td>
+        </td> -->
       </tr>
     </tbody>
   </table>

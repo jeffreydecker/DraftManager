@@ -57,20 +57,12 @@
           <div class="form-group">
             <label class="input-label col-md-2 col-md-offset-1">Team</label>
             <div class="input-group col-md-8">
-              <!-- <select name="teamSelect" id="teamSelect"
+              <select name="teamSelect" id="teamSelect" class="form-control"
                 ng-options="team.name for team in $ctrl.league.teams track by team._id"
-                ng-model="$ctrl.draftTeam"></select> -->
-              <select class="form-control" name="Team">
-                <!-- <option ng-repeat="team in $ctrl.league.teams" ng-value="team">{{ team.name }}</option> -->
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-                <option>5</option>
-              </select>
+                ng-model="$ctrl.draftTeam"></select>
             </div>
           </div>
-          <div class="form-group">
+          <div ng-hide="!$ctrl.league.budget" class="form-group">
             <label class="input-label col-md-2 col-md-offset-1">Salary</label>
             <div class="input-group col-md-8">
               <span class="input-group-addon">$</span>
