@@ -1,5 +1,14 @@
 <div id="league-players" class="panel panel-default table-responsive">
-  <div class="panel-heading">Leagues</div>
+  <div class="panel-heading">Players
+  </div>
+  <form class="table-form">
+    <div class="form-group table-form">
+      <!-- <div class="input-group"> -->
+        <!-- <div class="input-group-addon"><i class="fa fa-search"></i></div> -->
+        <input type="text" class="form-control" placeholder="Filter" ng-model="$ctrl.searchInput">
+      <!-- </div> -->
+    </div>
+  </form>
   <table class="table table-sm table-striped table-hover table-condensed">
     <thead class="thead-inverse">
       <tr>
@@ -18,8 +27,8 @@
     </thead>
     <tbody>
       <tr ng-hide="$ctrl.players.length > 0" class="ng-hide"><td class="centered" colspan="11"><i class="fa fa-spinner fa-spin centered"></i></td></tr>
-      <tr ng-repeat="player in $ctrl.players">
-        <td><button type="submit" class="btn btn-primary btn-sm" ng-click="$ctrl.draftPlayer(player)">Draft</button></td>
+      <tr ng-repeat="player in $ctrl.players | filter:$ctrl.searchInput">
+        <td><button type="submit" class="btn btn-primary btn-sm" ng-click="$ctrl.showDraftModal(player)">Draft</button></td>
         <td>{{ player._player.rank == 9007199254740991 ? "Unranked" : player._player.rank }}</td>
         <td>{{ player._player.name }}</td>
         <td>{{ player._player.team }}</td>

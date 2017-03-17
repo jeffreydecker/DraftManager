@@ -2,8 +2,8 @@ angular.module('leaguePlayers').component('leaguePlayers', {
   templateUrl: 'league-players/league-players.template.html',
   controller: ['$http', '$routeParams', function LeagueFormController($http, $routeParams) {
     const that = this;
-    this.players = [];
-    this.allPlayers = [];
+    this.players = []; // Displayed players
+    this.allPlayers = []; // Complete player list
 
     $http.get(`/api/leagues/${$routeParams.leagueId}/players`)
       .success(function(data) {

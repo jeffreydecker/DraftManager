@@ -5,8 +5,8 @@ angular.module('draftManager')
         when('/', {
           template: '<leagues></leagues>'
         }).
-        when('/league/:leagueId/players', {
-          template: '<league-players></league-players>'
+        when('/league/:leagueId', {
+          template: '<league></league>'
         }).
         otherwise({
           redirectTo: '/'

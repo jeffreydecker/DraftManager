@@ -1,0 +1,28 @@
+<div id="league-teams" class="panel panel-default table-responsive">
+  <div class="panel-heading">Teams</div>
+  <table class="table table-sm table-striped table-hover table-condensed">
+    <thead class="thead-inverse">
+      <tr>
+        <th>Name</th>
+        <th>R</th>
+        <th>HR</th>
+        <th>RBI</th>
+        <th>SB</th>
+        <th>AVG</th>
+        <th>ERA</th>
+        <th>WHIP</th>
+        <th>K</th>
+        <th>W</th>
+        <th>S</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-hide="$ctrl.league.teams.length > 0" class="ng-hide"><td class="centered" colspan="11"><i class="fa fa-spinner fa-spin centered"></i></td></tr>
+      <tr ng-repeat="team in $ctrl.league.teams">
+        <th>{{ team.name }}</th>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<league-players></league-players>
