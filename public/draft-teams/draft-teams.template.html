@@ -4,18 +4,18 @@
     <thead class="thead-inverse">
       <tr>
         <th>Name</th>
-        <th>$ Remaining</th>
         <th>Picks Remaining</th>
-        <th>Max Bid</th>
+        <th ng-hide="!$ctrl.league.budget">$ Remaining</th>
+        <th ng-hide="!$ctrl.league.budget">Max Bid</th>
       </tr>
     </thead>
     <tbody>
       <tr ng-hide="$ctrl.league.teams.length > 0" class="ng-hide"><td class="centered" colspan="11"><i class="fa fa-spinner fa-spin centered"></i></td></tr>
       <tr ng-repeat="team in $ctrl.league.teams" data-toggle="modal" data-target="#myModal2">
         <th>{{ team.name }}</th>
-        <td>300</td> <!-- TODO - need to add budget to leagues with salary -->
-        <td>23</td> <!-- TODO - create team method for this -->
-        <td>278</td> <!-- TODO - create team method for this -->
+        <td>{{ $ctrl.remainingPicks(team) }}</td>
+        <td ng-hide="!$ctrl.league.budget">{{ $ctrl.remainingBudget(team) }}</td>
+        <td ng-hide="!$ctrl.league.budget">{{ $ctrl.maxBid(team) }}</td>
       </tr>
     </tbody>
   </table>
