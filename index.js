@@ -6,10 +6,13 @@ var express = require('express'),
   db = require('./config/db'),
   port = process.env.PORT || 8080,
   mongoose = require('mongoose'),
-  morgan = require('morgan');
+  morgan = require('morgan'),
+  cors = require('cors');
 
 // Connect to db
 mongoose.connect(db.url);
+
+app.use(cors({origin: 'http://localhost:3000'}));
 
 // Config app
 app.use(express.static(__dirname + '/public'));
