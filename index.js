@@ -12,7 +12,7 @@ var express = require('express'),
 // Connect to db
 mongoose.connect(db.url);
 
-app.use(cors({origin: 'http://localhost:3000'}));
+app.use(cors());/*{origin: 'http://localhost:3000'}));*/
 
 // Config app
 app.use(express.static(__dirname + '/public'));
