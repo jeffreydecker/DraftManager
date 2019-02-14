@@ -2,6 +2,8 @@
 var express = require('express'),
   router = express.Router(),
   request = require('request'),
+  rp = require('request-promise'),
+  axios = require('axios'),
   cheerio = require('cheerio'),
   Player = require('../models/player'),
   HitterProjection = require('../models/hitterProjection'),
@@ -23,6 +25,51 @@ router.param('leagueId', (req, res, next, leagueId) => {
       }
     });
 });
+
+router.route('/update/players')
+.patch(async (req, res) => {
+  try {
+    // Rankings
+    await getRankings()
+
+    return res.status(200).json({msg: "Rankings Updated"})
+  } catch(err) {
+    return res.status(400).json({error: err})
+  }
+});
+
+async function getRankings() {
+    // Rankings
+    // Get rankings html and load it into cheerio
+    var rankingsUrl = 'https://www.fantasypros.com/mlb/rankings/overall.php';
+    let rankingsHtml = await rp(rankingsUrl)
+    var $ = cheerio.load(rankingsHtml)
+
+    // For each ranking found in the html create a query for mongoose
+    var playerQueries = []
+    $('#data tbody tr').each(function (index, element) { // For each row in the player table
+      // Kind of sketchy way to get the fantasypros playerId from the dom for each row.
+      // These have a second class fp-id-<id> so we are grabbing the id part from that.
+      var playerId = $($(this).find('.fp-player-link').get(0)).attr('class').split('-').pop();
+      let playerQuery = Player.findOneAndUpdate(
+        {_id : playerId}, // Find existing player by id
+        {
+          _id : playerId,
+          name : $(this).find('.player-name').text(),
+          rank : $(this).find('.rank-cell').text(),
+          team : $(this).attr('data-team'),
+          pos : $(this).attr('data-pos')
+        },
+        {upsert : true}, // If not found, create a new one
+      )
+      playerQueries.push(playerQuery)
+    });
+
+    // Once all queries are gathered, execute them
+    playerQueries.forEach(async (query) => {
+        await query.exec()
+    })
+}
 
 router.route('/rankings')
 .get((req, res) => {

@@ -11,7 +11,8 @@ var express = require('express'),
 
 // Connect to db
 mongoose.connect(db.url, {useNewUrlParser: true});
-mongoose.set('debug', true)
+// mongoose.set('debug', true)
+mongoose.set('useFindAndModify', false)
 
 app.use(cors());/*{origin: 'http://localhost:3000'}));*/
 
