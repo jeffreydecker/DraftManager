@@ -21,13 +21,13 @@
   "homepage": "https://github.com/jeffreydecker/DraftManager#readme",
   "dependencies": {
     "angular": "^1.6.2",
-    "async": "^2.1.5",
+    "async": "^2.6.2",
     "body-parser": "^1.16.1",
     "cheerio": "^0.22.0",
     "cors": "^2.8.5",
     "express": "^4.14.1",
     "method-override": "^2.3.7",
-    "mongoose": "^4.8.2",
+    "mongoose": "^5.4.11",
     "morgan": "^1.8.1",
     "request": "^2.79.0"
   }

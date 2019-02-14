@@ -10,7 +10,8 @@ var express = require('express'),
   cors = require('cors');
 
 // Connect to db
-mongoose.connect(db.url);
+mongoose.connect(db.url, {useNewUrlParser: true});
+mongoose.set('debug', true)
 
 app.use(cors());/*{origin: 'http://localhost:3000'}));*/
 

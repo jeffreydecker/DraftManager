@@ -107,6 +107,46 @@ router.route('/')
   controller.getLeagues(req, res);
 });
 
+router.route('/v2/')
+.post(async (req, res) => { // Create a league
+  if (!req.body.name || !req.body.teamCount || !req.body.rosterSize) {
+    return res.status(400).json({msg: "Missing required params"})
+  }
+
+  const league = new League({
+    name: req.body.name,
+    budget: req.body.budget || 0,
+    rosterSize: req.body.rosterSize,
+    minorsCount: req.body.minorsCount,
+    includeMinorsInCap: false,
+  })
+
+  try {
+    var savedLeague = await league.save()
+
+    var teams = [{name: "My Team"}]
+    for (var i = 1; i < req.body.teamCount; i++) {
+      teams.push({name: "Team " + i})
+    }
+
+    console.log(teams)
+
+    let savedTeams = await Team.insertMany(teams)
+    console.log(savedTeams)
+    var temp = savedLeague
+    savedTeams.forEach(function(team, index, array) {
+      console.log(team)
+      temp.teams.push(team._id)
+    });
+
+    let finalLeague = await savedLeague.save()
+
+    return res.status(200).json({league: finalLeague})
+  } catch (err) {
+    return res.status(400).json({error: err})
+  }
+});
+
 // League specific route
 router.route('/:leagueId')
 .get((req, res) => { // Get a league
