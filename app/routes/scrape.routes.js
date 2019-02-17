@@ -30,6 +30,7 @@ router.route('/update/players')
 .patch(async (req, res) => {
   try {
     // Rankings
+    // TODO - These functoins should return promises so error handling is better
     await getRankings()
     await getHitterProjections()
     await getPitcherProjections()
@@ -199,7 +200,7 @@ async function getPitcherProjections() {
         completeGames : player.completeGames,
       }, { upsert : true, new : true}, // If not found, create a new one
     ).exec()
-    
+
     let updatedPlayer = Player.findOneAndUpdate(
       { _id : projection._player },
       { _id : projection._player,
