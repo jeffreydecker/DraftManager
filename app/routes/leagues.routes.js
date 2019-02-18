@@ -33,8 +33,8 @@ router.param('leagueId', (req, res, next, leagueId) => {
 });
 
 router.param('leaguePlayerId', (req, res, next, leaguePlayerId) => {
-  League.findOne({_id : leaguePlayerId})
-    .populate('_player _league _team')
+  LeaguePlayer.findOne({_id : leaguePlayerId})
+    .populate('_player _team')
     .exec((err, leaguePlayer) => {
       if (err) {
         res.send(err)
@@ -225,6 +225,34 @@ router.route('/players/:leaguePlayerId/draft')
   } else {
     res.send(new Error(`No league player found for ${req.params.leaguePlayerId}`));
   }
+});
+
+router.route('/add/:leaguePlayerId')
+.put(async (req, res) => {
+  if (req.leaguePlayer) {
+    try {
+      var player = req.leaguePlayer
+      let teamId = req.body.teamId
+      var team = await Team.findOne({_id: teamId}).exec();
+      player._team = teamId;
+      let _p = await player.save()
+      console.log(`Team: ${team}`)
+      console.log(`Player: ${player}`)
+      team.players.push(player._id);
+      console.log("Player added to team")
+      let _t = await team.save()
+      res.status(200).json({msg: "Player Drafted"})
+    } catch (err) {
+      res.status(400).send(err)
+    }
+  } else {
+    res.status(404).send(new Error("Player not found to draft"))
+  }
+});
+
+router.route('/drop/:leaguePlayerId')
+.post((req, res) => {
+  // TODO
 });
 
 module.exports = router;
