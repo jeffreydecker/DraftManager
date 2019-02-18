@@ -7,7 +7,7 @@ var express = require('express'),
   Player = require('../models/player'),
   controller = require('../controllers/main.controller');
 
-// Fetches legaue for leagueId param
+// Middleware
 router.param('leagueId', (req, res, next, leagueId) => {
   League.findOne({_id : leagueId})
     .populate('teams')
@@ -129,14 +129,27 @@ router.route('/v2/')
       teams.push({name: "Team " + i})
     }
 
-    console.log(teams)
-
     let savedTeams = await Team.insertMany(teams)
-    console.log(savedTeams)
     var temp = savedLeague
     savedTeams.forEach(function(team, index, array) {
       console.log(team)
       temp.teams.push(team._id)
+    });
+
+    let players = await Player.find()
+    .sort({rank : 'asc'})
+    .populate('hittingProjections pitchingProjections')
+    .exec();
+
+    var playerJsons = [];
+    players.forEach((player, index, array) => {
+      playerJsons.push({_league: savedLeague._id, _player: player._id});
+    });
+
+    let leaguePlayers = await LeaguePlayer.insertMany(playerJsons)
+
+    leaguePlayers.forEach(function(player, index, array) {
+      savedLeague.players.push(player._id);
     });
 
     let finalLeague = await savedLeague.save()
@@ -147,7 +160,7 @@ router.route('/v2/')
   }
 });
 
-// League specific route
+// League specific routes
 router.route('/:leagueId')
 .get((req, res) => { // Get a league
   res.json(req.league);
@@ -178,12 +191,12 @@ router.route('/:leagueId')
   }
 });
 
-// League specific route
+// League specific Players routes
 router.route('/:leagueId/players')
 .get((req, res) => {
   if (req.league) {
     LeaguePlayer.find({_league: req.league._id})
-      .populate('_league _team')
+      .populate('_team')
       .populate({
         path: '_player',
         populate: {
@@ -199,6 +212,7 @@ router.route('/:leagueId/players')
   }
 });
 
+// League Player specific routes
 router.route('/players/:leaguePlayerId/draft')
 .post((req, res) => {
   if (req.leaguePlayer) {

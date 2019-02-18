@@ -3,14 +3,14 @@ var express = require('express'),
   router = express.Router(),
   request = require('request'),
   rp = require('request-promise'),
-  axios = require('axios'),
   cheerio = require('cheerio'),
   Player = require('../models/player'),
   HitterProjection = require('../models/hitterProjection'),
   PitcherProjection = require('../models/pitcherProjection'),
+  League = require('../models/league'),
   controller = require('../controllers/main.controller');
 
-// Fetches legaue for leagueId param
+// Middleware to fetch legaue for leagueId param
 router.param('leagueId', (req, res, next, leagueId) => {
   League.findOne({_id : leagueId})
     .populate('teams players')
@@ -26,10 +26,11 @@ router.param('leagueId', (req, res, next, leagueId) => {
     });
 });
 
+// API to update our player database
+
 router.route('/update/players')
 .patch(async (req, res) => {
   try {
-    // Rankings
     // TODO - These functoins should return promises so error handling is better
     await getRankings()
     await getHitterProjections()
@@ -63,7 +64,7 @@ async function getRankings() {
           team : $(this).attr('data-team'),
           pos : $(this).attr('data-pos')
         },
-        { upsert : true, , new : true }, // If not found, create a new one
+        { upsert : true, new : true }, // If not found, create a new one
       )
       playerQueries.push(playerQuery)
     });
@@ -213,6 +214,7 @@ async function getPitcherProjections() {
   })
 };
 
+// APIs to scrape on demand
 
 router.route('/rankings')
 .get((req, res) => {
@@ -239,13 +241,6 @@ router.route('/pitcher/:pitcherId')
   scrapePitcherProjections(req.params.pitcherId, res);
 });
 
-// TODO - make this useful by using promises
-// function scrapePlayers() {
-//   scrapeHitterProjections();
-//   scrapePitcherProjections();
-//   scrapeRankings();
-// };
-
 function scrapeAllHitterProjections(res) {
   var time = Date.now()
   var url = 'https://www.fantasypros.com/mlb/projections/hitters.php';
@@ -262,74 +257,26 @@ function scrapeAllHitterProjections(res) {
         var team = $(this).find('small a').text();
         var positions = $(this).find('small').text().split(' - ').pop().replace(')', '');
         var projections = $(this).find('td');
-        players.push (
-          {
-            id : playerId,
-            name : playerName,
-            team : team,
-            positions : positions,
-            atBats : $(projections.get(1)).text(),
-            runs : $(projections.get(2)).text(),
-            homeRuns : $(projections.get(3)).text(),
-            rbi : $(projections.get(4)).text(),
-            steals : $(projections.get(5)).text(),
-            average : $(projections.get(6)).text(),
-            obp : $(projections.get(7)).text(),
-            hits : $(projections.get(8)).text(),
-            doubles : $(projections.get(9)).text(),
-            tripples : $(projections.get(10)).text(),
-            walk : $(projections.get(11)).text(),
-            strikeouts : $(projections.get(12)).text(),
-            slugging : $(projections.get(13)).text(),
-            ops : $(projections.get(14)).text(),
-          }
-        )
-
-        // TODO : This really isn't the best way to go about this because it overwrites
-        // existing entries, which resets the rank. We could not set it and use a
-        // default for rank but then the sort option always puts the defaul ranked
-        // players at the top when sorting. Long term there should just be a scrape
-        // task that scrapes projections then rankings
-
-        // HitterProjection.findOneAndUpdate(
-        //   {_player : playerId}, { // Find existing player by id
-        //     _player : playerId,
-        //     atBats : $(projections.get(1)).text(),
-        //     runs : $(projections.get(2)).text(),
-        //     homeRuns : $(projections.get(3)).text(),
-        //     rbi : $(projections.get(4)).text(),
-        //     steals : $(projections.get(5)).text(),
-        //     average : $(projections.get(6)).text(),
-        //     obp : $(projections.get(7)).text(),
-        //     hits : $(projections.get(8)).text(),
-        //     doubles : $(projections.get(9)).text(),
-        //     tripples : $(projections.get(10)).text(),
-        //     walk : $(projections.get(11)).text(),
-        //     strikeouts : $(projections.get(12)).text(),
-        //     slugging : $(projections.get(13)).text(),
-        //     ops : $(projections.get(14)).text(),
-        //   }, {upsert : true}, // If not found, create a new one
-        //   function(err, hitterProjection) {
-        //     // console.log(`hitterProjection: ${hitterProjection} for ${playerName}`);
-        //     if (err) console.log(`Error: ${err}`);
-        //     if (hitterProjection) {
-        //       Player.findOneAndUpdate(
-        //         { _id : hitterProjection._player },
-        //         { _id : hitterProjection._player,
-        //           name : playerName,
-        //           team : team,
-        //           pos : positions,
-        //           rank : Number.MAX_SAFE_INTEGER,
-        //           hittingProjections: hitterProjection._id },
-        //         { upsert : true },
-        //         function(err, player) {
-        //           if (err) consolse.log(`Error : ${err}`);
-        //         });
-        //     } else {
-
-        //       console.log(`Missing projection for ${playerName}:${hitterProjection}`);
-        //     }
-        //   });
+        players.push ({
+          id : playerId,
+          name : playerName,
+          team : team,
+          positions : positions,
+          atBats : $(projections.get(1)).text(),
+          runs : $(projections.get(2)).text(),
+          homeRuns : $(projections.get(3)).text(),
+          rbi : $(projections.get(4)).text(),
+          steals : $(projections.get(5)).text(),
+          average : $(projections.get(6)).text(),
+          obp : $(projections.get(7)).text(),
+          hits : $(projections.get(8)).text(),
+          doubles : $(projections.get(9)).text(),
+          tripples : $(projections.get(10)).text(),
+          walk : $(projections.get(11)).text(),
+          strikeouts : $(projections.get(12)).text(),
+          slugging : $(projections.get(13)).text(),
+          ops : $(projections.get(14)).text(),
+        })
       });
       resObj.latency = Date.now() - time;
       resObj.players = players;
@@ -372,7 +319,6 @@ function scrapeHitterProjections(hitterId, res) {
             slugging : $(projections.get(13)).text(),
             ops : $(projections.get(14)).text(),
           }
-          return false
         }
       });
       res.json(resObj);
@@ -414,50 +360,6 @@ function scrapeAllPitcherProjections(res) {
           losses : $(projections.get(13)).text(),
           completeGames : $(projections.get(14)).text(),
         });
-
-        // TODO : This really isn't the best way to go about this because it overwrites
-        // existing entries, which resets the rank. We could not set it and use a
-        // default for rank but then the sort option always puts the defaul ranked
-        // players at the top when sorting. Long term there should just be a scrape
-        // task that scrapes projections then rankings
-
-        // PitcherProjection.findOneAndUpdate(
-        //   {_player : playerId}, { // Find existing player by id
-        //     _player : playerId,
-        //     innings : $(projections.get(1)).text(),
-        //     strikeouts : $(projections.get(2)).text(),
-        //     wins : $(projections.get(3)).text(),
-        //     saves : $(projections.get(4)).text(),
-        //     era : $(projections.get(5)).text(),
-        //     whip : $(projections.get(6)).text(),
-        //     earnedRuns : $(projections.get(7)).text(),
-        //     hits : $(projections.get(8)).text(),
-        //     walks : $(projections.get(9)).text(),
-        //     homeRuns : $(projections.get(10)).text(),
-        //     games : $(projections.get(11)).text(),
-        //     starts : $(projections.get(12)).text(),
-        //     losses : $(projections.get(13)).text(),
-        //     completeGames : $(projections.get(14)).text(),
-        //   }, {upsert : true}, // If not found, create a new one
-        //   function(err, pitcherProjection) {
-        //     if (err) console.log(`Error: ${err}`);
-        //     if (pitcherProjection) {
-        //       Player.findOneAndUpdate(
-        //         { _id : pitcherProjection._player },
-        //         { _id : pitcherProjection._player,
-        //           name : playerName,
-        //           team : team,
-        //           pos : positions,
-        //           rank : Number.MAX_SAFE_INTEGER,
-        //           pitchingProjections: pitcherProjection._id },
-        //         { upsert : true },
-        //         function(err, player) {
-        //           if (err) console.log(`Error: ${err}`);
-        //         });
-        //     } else {
-        //         console.log(`Missing projection for ${playerName}:${pitcherProjection}`);
-        //     }
-        //   });
       });
       resObj.players = players
       res.json(resObj)
@@ -521,19 +423,6 @@ function scrapeRankings(res) {
           team : $(this).attr('data-team'),
           pos : $(this).attr('data-pos')
         })
-        // Player.findOneAndUpdate(
-        //   {_id : playerId}, // Find existing player by id
-        //   {
-        //     _id : playerId,
-        //     name : $(this).find('.player-name').text(),
-        //     rank : $(this).find('.rank-cell').text(),
-        //     team : $(this).attr('data-team'),
-        //     pos : $(this).attr('data-pos')
-        //   },
-        //   {upsert : true}, // If not found, create a new one
-        //   function(err, player) {
-        //     if (err) console.log(`Error: ${err}`);
-        //   });
       });
       res.json(players)
   });
