@@ -251,7 +251,7 @@ router.route('/add/:leaguePlayerId')
 });
 
 router.route('/drop/:leaguePlayerId')
-.post((req, res) => {
+.post(async (req, res) => {
   if (req.leaguePlayer) {
     try {
       var player = req.leaguePlayer
