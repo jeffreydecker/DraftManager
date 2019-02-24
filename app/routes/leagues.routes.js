@@ -255,7 +255,7 @@ router.route('/drop/:leaguePlayerId')
   if (req.leaguePlayer) {
     try {
       var player = req.leaguePlayer
-      let teamId = player.teamId
+      let teamId = player._team._id
       var team = await Team.findOne({_id: teamId}).exec();
 
       player._team = null;
