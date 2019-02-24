@@ -228,7 +228,7 @@ router.route('/players/:leaguePlayerId/draft')
 });
 
 router.route('/add/:leaguePlayerId')
-.put(async (req, res) => {
+.patch(async (req, res) => {
   if (req.leaguePlayer) {
     try {
       var player = req.leaguePlayer
@@ -251,7 +251,7 @@ router.route('/add/:leaguePlayerId')
 });
 
 router.route('/drop/:leaguePlayerId')
-.post(async (req, res) => {
+.patch(async (req, res) => {
   if (req.leaguePlayer) {
     try {
       var player = req.leaguePlayer
