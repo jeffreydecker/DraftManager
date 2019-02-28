@@ -20,18 +20,19 @@
   },
   "homepage": "https://github.com/jeffreydecker/DraftManager#readme",
   "dependencies": {
-    "angular": "^1.6.2",
+    "angular": "^1.7.7",
     "async": "^2.6.2",
     "axios": "^0.18.0",
-    "body-parser": "^1.16.1",
+    "body-parser": "^1.18.3",
     "cheerio": "^0.22.0",
     "cors": "^2.8.5",
-    "express": "^4.14.1",
-    "method-override": "^2.3.7",
-    "mongoose": "^5.4.11",
-    "morgan": "^1.8.1",
+    "express": "^4.16.4",
+    "method-override": "^2.3.10",
+    "mongoose": "^5.4.16",
+    "morgan": "^1.9.1",
     "npm": "^6.8.0",
+    "react-router-bootstrap": "^0.24.4",
     "request": "^2.88.0",
-    "request-promise": "^4.2.2"
+    "request-promise": "^4.2.4"
   }
 }
