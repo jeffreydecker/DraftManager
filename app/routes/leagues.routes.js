@@ -232,8 +232,8 @@ router.route('/add/:leaguePlayerId')
   if (req.leaguePlayer) {
     try {
       var player = req.leaguePlayer
-      let salary = req.salary
-      let rostered = req.rostered
+      let salary = req.body.salary
+      let rostered = req.body.rostered
       let teamId = req.body.teamId
       var team = await Team.findOne({_id: teamId}).exec();
       
