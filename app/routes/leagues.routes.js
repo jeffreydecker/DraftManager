@@ -232,10 +232,14 @@ router.route('/add/:leaguePlayerId')
   if (req.leaguePlayer) {
     try {
       var player = req.leaguePlayer
+      let salary = req.salary
+      let rostered = req.rostered
       let teamId = req.body.teamId
       var team = await Team.findOne({_id: teamId}).exec();
       
       player._team = teamId;
+      player.salary = salary
+      player.isRostered = rostered
       let _p = await player.save()
       
       team.players.push(player._id);
