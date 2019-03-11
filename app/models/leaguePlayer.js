@@ -6,7 +6,7 @@ var LeaguePlayerSchema = new Schema({
   salary  : Number,
   value   : Number,
   isMinor : Boolean,
-  isRostered: Boolean,
+  isRostered: {type: Boolean, default: true},
   _player : {type : String, ref: "Player"},
   _league : {type : Schema.Types.ObjectId, ref : "League"},
   _team   : {type : Schema.Types.ObjectId, ref : "Team"}
