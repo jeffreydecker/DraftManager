@@ -46,9 +46,17 @@ router.route('/:teamId')
 .get((req, res) => { // Get a team
   res.json(req.team);
 })
-.put((req, res) => { // Update a team
+.put(async (req, res) => { // Update a team
   if (req.team) {
-
+    req.team.name = req.body.team.name ? req.body.team.name : req.team.name
+    try {
+      let updatedTeam = await req.team.save()
+      return res.json(updatedTeam)
+    } catch (err) {
+      return res.status(400).send(err)
+    }
+  } else {
+    return res.status(400).send('Team not found')
   }
 })
 .delete((req, res) => { // Delete a team
